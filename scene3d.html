@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js + Video Control</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; }
+    #controls {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+        color: white;
+        font-family: sans-serif;
+    }
+    #controls input[type="range"] { width: 200px; }
+    #controls button { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <!-- الفيديو كخلفية -->
+    <video id="bgVideo" autoplay muted loop playsinline>
+        <source src="video.mp4" type="video/mp4">
+    </video>
+
+    <!-- Sliders + زر التحكم -->
+    <div id="controls">
+        <button id="playPauseBtn">Pause</button><br><br>
+        <label>Water flow speed <span id="speedValue">1</span></label><br>
+        <input type="range" id="speedSlider" min="0" max="3" step="0.01" value="1">
+    </div>
+
+    <!-- Three.js -->
+    <script type="module">
+        import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+        import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+
+        // Scene
+        const scene = new THREE.Scene();
+
+        // Camera
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0, 3);
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.domElement.style.position = "absolute";
+        renderer.domElement.style.top = 0;
+        renderer.domElement.style.left = 0;
+        document.body.appendChild(renderer.domElement);
+
+        // Light
+        const light = new THREE.DirectionalLight(0xffffff, 2);
+        light.position.set(3, 3, 3);
+        scene.add(light);
+
+        // Orbit Controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+
+        // Responsive resize
+        window.addEventListener("resize", () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+
+    <!-- فيديو التحكم -->
+    <script>
+        const video = document.getElementById("bgVideo");
+        const playPauseBtn = document.getElementById("playPauseBtn");
+        const speedSlider = document.getElementById("speedSlider");
+        const speedValue = document.getElementById("speedValue");
+
+        // تشغيل/إيقاف الفيديو
+        playPauseBtn.addEventListener("click", () => {
+            if(video.paused){
+                video.play();
+                playPauseBtn.innerText = "Pause";
+            } else {
+                video.pause();
+                playPauseBtn.innerText = "Play";
+            }
+        });
+
+        // التحكم في سرعة الفيديو
+        speedSlider.addEventListener("input", () => {
+            video.playbackRate = parseFloat(speedSlider.value);
+            speedValue.innerText = speedSlider.value;
+        });
+    </script>
+
+</body>
+</html>
+
